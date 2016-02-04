@@ -13,20 +13,24 @@ class Player(Thread):
     """
     Player wrapper to detect its termination.
     """
-    def __init__(self, cmd, hook=None):
+    def __init__(self, cmd, start_hook=None, stop_hook=None):
         super().__init__()
 
         self.cmd = cmd
         self.proc = None
-        self.hook = hook
+        self.start_hook = start_hook
+        self.stop_hook = stop_hook
 
     def run(self):
+        if self.start_hook:
+            self.start_hook()
+
         print("exec: %s" % self.cmd)
         self.proc = subprocess.Popen(self.cmd)
         self.proc.wait()
 
-        if self.hook:
-            self.hook()
+        if self.stop_hook:
+            self.stop_hook()
 
     def kill(self):
         """ kill the contained process """
@@ -64,17 +68,19 @@ class VideoScreen:
 
         print("  showing '%s'" % data)
 
-        if self.control_mpd:
-            print("pausing mpd...")
-            subprocess.call(["mpc", "pause"])
-
         # kill the existing mpv:
         if self.mpv is not None:
             self.mpv.kill()
 
         self.mpv = Player(MPV_INVOCATION + self.mpv_options + ["--", data],
-                          self.on_player_terminate)
+                          self.on_player_launch, self.on_player_terminate)
         self.mpv.start()
+
+    def on_player_launch(self):
+        """ what to do right before the player starts """
+        if self.control_mpd:
+            print("pausing mpd...")
+            subprocess.call(["mpc", "pause"])
 
     def on_player_terminate(self):
         """ what to do when the videoscreen player terminates """
