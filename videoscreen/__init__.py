@@ -88,6 +88,8 @@ class VideoScreen:
         print("launching on %s:%d" % (self.address, self.port))
 
         self.sock = socket.socket()
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
         self.sock.bind((self.address, self.port))
         self.sock.listen(1)
 
