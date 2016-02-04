@@ -16,3 +16,8 @@ __pycache__
 
 # workflow
 *.orig
+
+# distutils
+build/
+dist/
+MANIFEST
