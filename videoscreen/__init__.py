@@ -71,6 +71,7 @@ class VideoScreen:
         # kill the existing mpv:
         if self.mpv is not None:
             self.mpv.kill()
+            self.mpv.join()
 
         self.mpv = Player(MPV_INVOCATION + self.mpv_options + ["--", data],
                           self.on_player_launch, self.on_player_terminate)
