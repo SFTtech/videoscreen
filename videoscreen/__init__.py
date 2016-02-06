@@ -34,15 +34,17 @@ class VideoScreen:
         TODO: player selection e.g. for jpgs
         """
 
-        print("%s showing '%s'" % (sender, data))
-
         if self.mpv is not None:
             self.mpv.kill()
             self.mpv.join()
 
-        self.mpv = Player(MPV_INVOCATION + self.mpv_options + ["--", data],
-                          self.on_player_launch, self.on_player_terminate)
-        self.mpv.start()
+        if data:
+            print("%s showing '%s'" % (sender, data))
+            self.mpv = Player(MPV_INVOCATION + self.mpv_options + ["--", data],
+                              self.on_player_launch, self.on_player_terminate)
+            self.mpv.start()
+        else:
+            print("%s stopped video" % (sender, ))
 
     def on_player_launch(self):
         """ what to do right before the player starts """
