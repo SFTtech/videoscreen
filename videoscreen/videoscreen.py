@@ -39,12 +39,12 @@ class VideoScreen:
             self.mpv.join()
 
         if data:
-            print("%s showing '%s'" % (sender, data))
+            print("{} showing '{}'".format(sender, data))
             self.mpv = Player(MPV_INVOCATION + self.mpv_options + ["--", data],
                               self.on_player_launch, self.on_player_terminate)
             self.mpv.start()
         else:
-            print("%s stopped video" % (sender, ))
+            print("{} stopped video".format(sender))
 
     def on_player_launch(self):
         """ what to do right before the player starts """
@@ -59,7 +59,7 @@ class VideoScreen:
     def launch(self):
         """ run the videoscreen """
 
-        print("launching on %s:%d..." % (self.address, self.port))
+        print("launching on {}:{}...".format(self.address, self.port))
 
         loop = asyncio.get_event_loop()
         coro = loop.create_server(lambda: UrlReceiver(self),
