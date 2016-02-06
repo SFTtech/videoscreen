@@ -5,6 +5,7 @@ The video screen.
 import asyncio
 import subprocess
 
+from .mpd import MPD
 from .player import Player
 from .urlreceiver import UrlReceiver
 
@@ -24,8 +25,8 @@ class VideoScreen:
         self.mpv_options = args.options[1:]
 
         self.control_mpd = args.music
-
-        self.sock = None
+        self.mpd = MPD(args.mpdhost, args.mpdport)
+        self.mpd_was_playing = False
 
     def display(self, sender, data):
         """
@@ -35,7 +36,6 @@ class VideoScreen:
 
         print("%s showing '%s'" % (sender, data))
 
-        # kill the existing mpv:
         if self.mpv is not None:
             self.mpv.kill()
             self.mpv.join()
@@ -47,14 +47,12 @@ class VideoScreen:
     def on_player_launch(self):
         """ what to do right before the player starts """
         if self.control_mpd:
-            print("pausing mpd...")
-            subprocess.call(["mpc", "pause"])
+            self.mpd_was_playing = self.mpd.pause()
 
     def on_player_terminate(self):
         """ what to do when the videoscreen player terminates """
-        if self.control_mpd:
-            print("resuming mpd...")
-            subprocess.call(["mpc", "play"])
+        if self.control_mpd and self.mpd_was_playing:
+            self.mpd.play()
 
     def launch(self):
         """ run the videoscreen """

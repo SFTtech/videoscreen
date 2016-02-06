@@ -10,6 +10,14 @@ Another url terminates the previous link.
 Optionally, `mpd` can be paused during playback when using `-m`.
 
 
+Dependencies
+------------
+
+* Python3
+* [`mpv` player](https://mpv.io/)
+* [`mpc` client](http://www.musicpd.org/clients/mpc/) (optional)
+
+
 Invocation
 ----------
 

@@ -18,6 +18,10 @@ def main():
                      help="ip to listen on")
     cli.add_argument("-m", "--music", action="store_true",
                      help="control mpd player by pausing and unpausing")
+    cli.add_argument("--mpdhost", default=None,
+                     help="server where mpd is reached")
+    cli.add_argument("--mpdport", default=None,
+                     help="port where mpd is reached")
     cli.add_argument("options", default="", nargs=argparse.REMAINDER,
                      help="mpv options")
 
