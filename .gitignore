@@ -21,3 +21,6 @@ __pycache__
 build/
 dist/
 MANIFEST
+
+# rope python refactoring
+.ropeproject/
