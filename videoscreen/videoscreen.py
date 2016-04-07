@@ -28,11 +28,29 @@ class VideoScreen:
         self.mpd = MPD(args.mpdhost, args.mpdport)
         self.mpd_was_playing = False
 
-    def display(self, sender, data):
+        self.connection_count = 0
+        self.last_played_seq_id = -1
+
+    def get_play_id(self):
+        """ return the connection sequence number """
+        ret = self.connection_count
+        self.connection_count += 1
+        return ret
+
+    def is_newest_id(self, seq_nr):
+        """ return if the given sequence number """
+        return seq_nr > self.last_played_seq_id
+
+    def display(self, seq_nr, sender, data):
         """
         show a new video and kill the old one
         TODO: player selection e.g. for jpgs
         """
+
+        if not self.is_newest_id(seq_nr):
+            raise Exception("can't play too old id")
+
+        self.last_played_seq_id = seq_nr
 
         if self.mpv is not None:
             self.mpv.kill()
