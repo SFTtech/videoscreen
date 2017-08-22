@@ -1,6 +1,6 @@
 videoscreen - display received urls with mpv
 
-Copyright (C) 2016  Jonas Jelten <jj@stusta.net>
+Copyright (C) 2016-2017 Jonas Jelten <jj@stusta.net>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by

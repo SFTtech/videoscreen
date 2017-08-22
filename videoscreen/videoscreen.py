@@ -6,7 +6,6 @@ import asyncio
 
 from .mpd import MPD
 from .player import Player
-from .urlreceiver import UrlReceiver
 
 
 MPV_INVOCATION = ["mpv"]
@@ -48,7 +47,7 @@ class VideoScreen:
         """
 
         if not self.is_newest_id(seq_nr):
-            raise Exception("can't play too old id")
+            raise Exception("can't play used connection id")
 
         self.last_played_seq_id = seq_nr
 
@@ -74,14 +73,50 @@ class VideoScreen:
         if self.control_mpd and self.mpd_was_playing:
             self.mpd.play()
 
+    async def process_command(self, cmd, connection_id, peer_id):
+        """
+        Process a command from a client
+        """
+
+        command = cmd.decode(errors="ignore")
+
+        if False:
+            raise NotImplementedError("more commands")
+
+        else:
+            self.display(connection_id, peer_id, cmd.strip())
+            return b"yay!\n"
+
+    async def new_client(self, reader, writer):
+        """
+        Called when a new client connects to the server.
+        """
+
+        conn_id = self.get_play_id()
+        peer_id = writer.get_extra_info("peername")
+
+        while True:
+            command = await reader.readline()
+
+            if not command:
+                reader.feed_eof()
+                writer.close()
+                break
+
+            try:
+                result = await self.process_command(command, conn_id, peer_id)
+                writer.write(result)
+            except Exception as exc:
+                writer.write(("error: %s\n" % exc).encode())
+
     def launch(self):
         """ run the videoscreen """
 
         print("launching on {}:{}...".format(self.address, self.port))
 
         loop = asyncio.get_event_loop()
-        coro = loop.create_server(lambda: UrlReceiver(self),
-                                  self.address, self.port)
+        coro = asyncio.start_server(self.new_client,
+                                    self.address, self.port)
         server = loop.run_until_complete(coro)
 
         try:

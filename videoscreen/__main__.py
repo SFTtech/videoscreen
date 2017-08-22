@@ -8,6 +8,7 @@ import argparse
 
 from . import VideoScreen
 
+
 def main():
     """ launch the screen """
 

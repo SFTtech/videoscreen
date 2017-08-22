@@ -1,0 +1,12 @@
+# videoscreen systemd user service
+
+[Unit]
+Description=Videoscreen mpv server
+After=network-online.target
+
+[Service]
+ExecStart=/usr/bin/python3 -m videoscreen -- --quiet
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
