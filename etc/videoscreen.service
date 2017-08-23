@@ -2,10 +2,10 @@
 
 [Unit]
 Description=Videoscreen mpv server
-After=network-online.target
+After=network-online.target display-manager.service
 
 [Service]
-ExecStart=/usr/bin/python3 -m videoscreen -- --quiet
+ExecStart=/usr/bin/python3 -m videoscreen -- --fs --quiet
 Restart=on-failure
 
 [Install]
