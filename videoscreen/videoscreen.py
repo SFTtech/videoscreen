@@ -3,6 +3,7 @@ The video screen.
 """
 
 import asyncio
+import re
 
 from .mpd import MPD
 from .player import Player
@@ -47,7 +48,7 @@ class VideoScreen:
         """
 
         if not self.is_newest_id(seq_nr):
-            raise Exception("can't play used connection id")
+            return b"can't play expired connection id\n"
 
         self.last_played_seq_id = seq_nr
 
@@ -62,6 +63,8 @@ class VideoScreen:
             self.mpv.start()
         else:
             print("{} stopped video".format(sender))
+
+        return b"yay!\n"
 
     def on_player_launch(self):
         """ what to do right before the player starts """
@@ -78,14 +81,40 @@ class VideoScreen:
         Process a command from a client
         """
 
-        command = cmd.decode(errors="ignore")
+        cmdstr = cmd.decode(errors="ignore").strip()
+        command = cmdstr.split()
 
-        if False:
-            raise NotImplementedError("more commands")
+        if command and command[0] == "help":
+            return (
+                False,
+                ("-=[videoscreen]=-\n"
+                 "help - help\n"
+                 "vol [+-=]$percent - volume control\n"
+                 "anything else - play media\n").encode()
+            )
+
+        elif command and command[0].startswith("vol"):
+            # vol (=)50|vol +12|vol -10
+            if len(command) == 2:
+                vol_cmd = re.match(r"([+=-]?)\s*(\d+)", command[1])
+                if vol_cmd:
+                    op = vol_cmd.group(1).replace("=", "")
+                    vol = min(int(vol_cmd.group(2)), 100)
+
+                    cmd = ["amixer", "sset", "Master", "{}%{}".format(vol, op)]
+                    proc = await asyncio.create_subprocess_exec(*cmd)
+
+                    ret = b"kay\n" if (await proc.wait() == 0) else b"fail\n"
+                    return (False, ret)
+
+            return (False, b"invalid volume command\n")
+
+        elif command and command[0] == "exit":
+            return (True, b"kthxbai\n")
 
         else:
-            self.display(connection_id, peer_id, cmd.strip())
-            return b"yay!\n"
+            ret = self.display(connection_id, peer_id[0], cmdstr)
+            return (True, ret)
 
     async def new_client(self, reader, writer):
         """
@@ -99,14 +128,25 @@ class VideoScreen:
             command = await reader.readline()
 
             if not command:
+                writer.write(b"cya\n")
                 reader.feed_eof()
                 writer.close()
                 break
 
             try:
-                result = await self.process_command(command, conn_id, peer_id)
+                do_close, result = await self.process_command(
+                    command, conn_id, peer_id
+                )
+
                 writer.write(result)
+
+                if do_close:
+                    writer.close()
+                    break
+
             except Exception as exc:
+                import traceback
+                traceback.print_exc()
                 writer.write(("error: %s\n" % exc).encode())
 
     def launch(self):
