@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='videoscreen',
-    version='1.1',
+    version='1.2',
     description='play links submitted via netcat with mpv',
     long_description=(
         "A small daemon which waits for incoming media urls.\n"
